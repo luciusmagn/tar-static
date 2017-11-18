@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# build static coreutils because we need exercises in minimalism
+# build static gawk because we need exercises in minimalism
 # MIT licensed: google it or see robxu9.mit-license.org.
 #
 # For Linux, also builds musl for truly static linking.
 
-coreutils_version="8.28"
+gawk_version="4.2.0"
 musl_version="1.1.15"
 
 platform=$(uname -s)
@@ -19,11 +19,11 @@ mkdir build # make build directory
 pushd build
 
 # download tarballs
-echo "= downloading coreutils"
-curl -LO http://ftp.gnu.org/gnu/coreutils/coreutils-${coreutils_version}.tar.xz
+echo "= downloading gawk"
+curl -LO http://ftp.gnu.org/gnu/gawk/gawk-${gawk_version}.tar.xz
 
-echo "= extracting coreutils"
-tar xJf coreutils-${coreutils_version}.tar.xz
+echo "= extracting gawk"
+tar xJf gawk-${gawk_version}.tar.xz
 
 if [ "$platform" = "Linux" ]; then
   echo "= downloading musl"
@@ -50,12 +50,12 @@ else
   echo "= (This is mainly due to non-static libc availability.)"
 fi
 
-echo "= building coreutils"
+echo "= building gawk"
 
-pushd coreutils-${coreutils_version}
+pushd gawk-${gawk_version}
 env FORCE_UNSAFE_CONFIGURE=1 CFLAGS="$CFLAGS -Os -ffunction-sections -fdata-sections" LDFLAGS='-Wl,--gc-sections' ./configure
 make
-popd # coreutils-${coreutils_version}
+popd # gawk-${gawk_version}
 
 popd # build
 
@@ -64,14 +64,9 @@ if [ ! -d releases ]; then
 fi
 
 echo "= striptease"
-strip -s -R .comment -R .gnu.version --strip-unneeded build/coreutils-${coreutils_version}/coreutils
+strip -s -R .comment -R .gnu.version --strip-unneeded build/gawk-${gawk_version}/gawk
 echo "= compressing"
-
-shopt -s extglob
-for file in build/coreutils-${coreutils_version}/src/!(*.*)
-do
-	upx --ultra-brute $file
-done
-echo "= extracting coreutils binary"
-cp build/coreutils-${coreutils_version}/src/!(*.*) releases
+upx --ultra-brute build/gawk-${gawk_version}/gawk
+echo "= extracting gawk binary"
+cp build/gawk-${gawk_version}/gawk releases
 echo "= done"
