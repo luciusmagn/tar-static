@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# build static sed because we need exercises in minimalism
-# MIT licensed: google it or see robxu9.mit-license.org.
+# build static tar because we need exercises in minimalism
+# MIT licentar: google it or see robxu9.mit-license.org.
 #
 # For Linux, also builds musl for truly static linking.
 
-sed_version="4.4"
+tar_version="1.29"
 musl_version="1.1.15"
 
 platform=$(uname -s)
@@ -19,11 +19,11 @@ mkdir build # make build directory
 pushd build
 
 # download tarballs
-echo "= downloading sed"
-curl -LO http://ftp.gnu.org/gnu/sed/sed-${sed_version}.tar.xz
+echo "= downloading tar"
+curl -LO http://ftp.gnu.org/gnu/tar/tar-${tar_version}.tar.xz
 
-echo "= extracting sed"
-tar xJf sed-${sed_version}.tar.xz
+echo "= extracting tar"
+tar xJf tar-${tar_version}.tar.xz
 
 if [ "$platform" = "Linux" ]; then
   echo "= downloading musl"
@@ -50,12 +50,12 @@ else
   echo "= (This is mainly due to non-static libc availability.)"
 fi
 
-echo "= building sed"
+echo "= building tar"
 
-pushd sed-${sed_version}
+pushd tar-${tar_version}
 env FORCE_UNSAFE_CONFIGURE=1 CFLAGS="$CFLAGS -Os -ffunction-sections -fdata-sections" LDFLAGS='-Wl,--gc-sections' ./configure
 make
-popd # sed-${sed_version}
+popd # tar-${tar_version}
 
 popd # build
 
@@ -64,9 +64,9 @@ if [ ! -d releases ]; then
 fi
 
 echo "= striptease"
-strip -s -R .comment -R .gnu.version --strip-unneeded build/sed-${sed_version}/sed/sed
+strip -s -R .comment -R .gnu.version --strip-unneeded build/tar-${tar_version}/src/tar
 echo "= compressing"
-upx --ultra-brute build/sed-${sed_version}/sed/sed
-echo "= extracting sed binary"
-cp build/sed-${sed_version}/sed/sed releases
+upx --ultra-brute build/tar-${tar_version}/src/tar
+echo "= extracting tar binary"
+cp build/tar-${tar_version}/src/tar releases
 echo "= done"
